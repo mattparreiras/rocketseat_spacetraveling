@@ -5,6 +5,7 @@ import { FiCalendar, FiUser } from 'react-icons/fi';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
+import { useState } from 'react';
 import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
@@ -33,11 +34,41 @@ interface HomeProps {
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default function Home(props: HomeProps) {
   const { postsPagination } = props;
-  const { next_page, results } = postsPagination;
+
+  const [nextPage, setNextPage] = useState<string>(postsPagination.next_page);
+  const [posts, setPost] = useState<Post[]>(postsPagination.results);
+
+  const loadMorePost = (): void => {
+    if (nextPage)
+      fetch(nextPage)
+        .then(response => response.json())
+        .then(data => {
+          setNextPage(data.next_page);
+          const newPosts = data.results.map(post => {
+            return {
+              uid: post.uid,
+              first_publication_date: format(
+                new Date(post.first_publication_date),
+                'dd MMM yyyy',
+                {
+                  locale: ptBR,
+                }
+              ),
+              data: {
+                title: RichText.asText(post.data.title),
+                subtitle: RichText.asText(post.data.subtitle),
+                author: RichText.asText(post.data.author),
+              },
+            };
+          });
+          setPost([...posts, ...newPosts]);
+        });
+  };
+
   return (
     <div className={commonStyles.container}>
       <img src="/images/logo.svg" alt="logo" className={styles.logo} />
-      {results.map(post => (
+      {posts.map(post => (
         <div className={styles.postItem}>
           <a>{post.data.title}</a>
           <span>{post.data.subtitle}</span>
@@ -51,7 +82,17 @@ export default function Home(props: HomeProps) {
           </div>
         </div>
       ))}
-      {next_page ? <a className={styles.loadMore}>Carregar mais Post</a> : ''}
+      {nextPage ? (
+        <button
+          type="button"
+          onClick={() => loadMorePost()}
+          className={styles.loadMore}
+        >
+          Carregar mais Post
+        </button>
+      ) : (
+        ''
+      )}
     </div>
   );
 }
