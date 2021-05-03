@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
 import { ReactElement, useMemo } from 'react';
+import { useRouter } from 'next/router';
 import Header from '../../components/Header';
 
 import { getPrismicClient } from '../../services/prismic';
@@ -37,16 +38,25 @@ interface PostProps {
 export default function Post(props: PostProps): ReactElement {
   const { post } = props;
 
-  const timeToRead = useMemo(() => {
-    let wordCount = 0;
-    if (post) {
-      post.data.content.forEach(section => {
-        wordCount += section.heading.split(' ').length;
-        wordCount += section.body.text.split(' ').length;
-      });
-    }
-    return Math.ceil(wordCount / 200);
-  }, [post]);
+  const router = useRouter();
+
+  const timeToRead = 0; // useMemo(() => {
+  //   let wordCount = 0;
+  //   if (post) {
+  //     post.data.content.forEach(section => {
+  //       wordCount += section.heading.split(' ').length;
+  //       wordCount += section.body.text.split(' ').length;
+  //     });
+  //   }
+  //   return Math.ceil(wordCount / 200);
+  // }, [post]);
+
+  // If the page is not yet generated, this will be displayed
+  // initially until getStaticProps() finishes running
+  if (router.isFallback) {
+    return <div>Carregando...</div>;
+  }
+
   return (
     <>
       <Header />
