@@ -91,7 +91,7 @@ export default function Home(props: HomeProps) {
           onClick={() => loadMorePost()}
           className={styles.loadMore}
         >
-          Carregar mais Post
+          Carregar mais posts
         </button>
       ) : (
         ''

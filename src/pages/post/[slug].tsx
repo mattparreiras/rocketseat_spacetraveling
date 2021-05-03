@@ -1,4 +1,5 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
+import Prismic from '@prismicio/client';
 import { RichText } from 'prismic-dom';
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
 import { format } from 'date-fns';
@@ -52,8 +53,12 @@ export default function Post(props: PostProps) {
               <FiClock />
             </span>
           </div>
-          {post.data.content.map(section => (
-            <section className={styles.postContent}>
+          {post.data.content.map((section, index) => (
+            <section
+              // eslint-disable-next-line react/no-array-index-key
+              key={index + section.heading}
+              className={styles.postContent}
+            >
               <h2>{section.heading}</h2>
               <div dangerouslySetInnerHTML={{ __html: section.body.text }} />
             </section>
@@ -66,11 +71,20 @@ export default function Post(props: PostProps) {
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const prismic = getPrismicClient();
-  // const posts = await prismic.query(TODO);
+
+  const posts = await prismic.query(
+    [Prismic.predicates.at('document.type', 'post')],
+    {
+      fetch: [],
+      pageSize: 2,
+    }
+  );
+
+  const paths = posts.results.map(post => ({ params: { slug: post.uid } }));
 
   return {
-    paths: [],
-    fallback: 'blocking',
+    paths,
+    fallback: true,
   };
 };
 
