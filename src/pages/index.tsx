@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
@@ -69,8 +70,10 @@ export default function Home(props: HomeProps) {
     <div className={commonStyles.container}>
       <img src="/images/logo.svg" alt="logo" className={styles.logo} />
       {posts.map(post => (
-        <div className={styles.postItem}>
-          <a>{post.data.title}</a>
+        <div key={post.uid} className={styles.postItem}>
+          <Link href={`/post/${post.uid}`}>
+            <a>{post.data.title}</a>
+          </Link>
           <span>{post.data.subtitle}</span>
           <div>
             <time>
