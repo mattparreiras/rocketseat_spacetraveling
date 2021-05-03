@@ -24,40 +24,41 @@
     font-size: 3rem;
     font-weight: 900;
   }
+}
 
-  > div{
-    margin-top: 1.5rem;
+.postInfo{
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-items: center;
+
+
+  font-size: 1rem;
+  line-height: 1.4rem;
+
+  color:var(--info);
+
+  time{
     display: flex;
-    flex-direction: row;
     align-items: center;
-    justify-items: center;
 
-
-    font-size: 1rem;
-    line-height: 1.4rem;
-
-    color:var(--info);
-
-    time{
-      display: flex;
-      align-items: center;
-
-      svg{
-        margin-right: 0.5rem;
-      }
-      margin-right: 1rem;
+    svg{
+      margin-right: 0.5rem;
     }
-
-    span{
-      display: flex;
-      align-items: center;
-
-      svg{
-        margin-right: 0.5rem;
-      }
-      margin-right: 1rem;
-    }
+    margin-right: 1rem;
   }
+
+  span{
+    display: flex;
+    align-items: center;
+
+    svg{
+      margin-right: 0.5rem;
+    }
+    margin-right: 1rem;
+  }
+
 }
 
 .banner{

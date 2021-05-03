@@ -40,16 +40,21 @@ export default function Post(props: PostProps): ReactElement {
 
   const router = useRouter();
 
-  const timeToRead = 0; // useMemo(() => {
-  //   let wordCount = 0;
-  //   if (post) {
-  //     post.data.content.forEach(section => {
-  //       wordCount += section.heading.split(' ').length;
-  //       wordCount += section.body.text.split(' ').length;
-  //     });
-  //   }
-  //   return Math.ceil(wordCount / 200);
-  // }, [post]);
+  const timeToRead = useMemo(() => {
+    const wordCount = post.data.content.reduce((total, contentItem) => {
+      total += contentItem.heading.split(' ').length;
+
+      const words = contentItem.body.map(
+        section => section.text.split(' ').length
+      );
+      words.forEach(word => {
+        total += word;
+      });
+
+      return total;
+    }, 0);
+    return Math.ceil(wordCount / 200);
+  }, [post]);
 
   // If the page is not yet generated, this will be displayed
   // initially until getStaticProps() finishes running
@@ -68,27 +73,32 @@ export default function Post(props: PostProps): ReactElement {
       <main className={commonStyles.container}>
         <article className={styles.post}>
           <h1>{post.data.title}</h1>
-          <div>
+          <div className={styles.postInfo}>
             <time>
-              <FiCalendar /> {post.first_publication_date}
+              <FiCalendar />{' '}
+              {format(new Date(post.first_publication_date), 'PP', {
+                locale: ptBR,
+              })}
             </time>
             <span>
               <FiUser /> {post.data.author}
             </span>
             <span>
-              <FiClock /> {timeToRead}min
+              <FiClock /> {timeToRead} min
             </span>
           </div>
-          {post.data.content.map((section, index) => (
-            <section
-              // eslint-disable-next-line react/no-array-index-key
-              key={index + section.heading}
-              className={styles.postContent}
-            >
-              <h2>{section.heading}</h2>
-              <div dangerouslySetInnerHTML={{ __html: section.body.text }} />
-            </section>
-          ))}
+          <div className={styles.postContent}>
+            {post.data.content.map(section => (
+              <section key={section.heading}>
+                <h2>{section.heading}</h2>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: RichText.asHtml(section.body),
+                  }}
+                />
+              </section>
+            ))}
+          </div>
         </article>
       </main>
     </>
@@ -120,27 +130,35 @@ export const getStaticProps: GetStaticProps = async context => {
 
   const response = await prismic.getByUID('post', String(slug), {});
 
-  const content = response.data.content.map(section => ({
-    heading: RichText.asText(section.heading),
-    body: {
-      text: RichText.asHtml(section.body),
-    },
-  }));
+  const content = response.data.content.map(section => {
+    return {
+      heading:
+        typeof section.heading === 'string'
+          ? section.heading
+          : RichText.asText(section.heading),
+      body: [...section.body],
+    };
+  });
 
   const post = {
-    first_publication_date: format(
-      new Date(response.first_publication_date),
-      'dd MMM yyyy',
-      {
-        locale: ptBR,
-      }
-    ),
+    first_publication_date: response.first_publication_date,
+    uid: response.uid,
     data: {
-      title: RichText.asText(response.data.title),
+      title:
+        typeof response.data.title === 'string'
+          ? response.data.title
+          : RichText.asText(response.data.title),
+      subtitle:
+        typeof response.data.subtitle === 'string'
+          ? response.data.subtitle
+          : RichText.asText(response.data.subtitle),
       banner: {
-        url: response.data.banner.url,
+        url: response.data.banner.url ?? null,
       },
-      author: RichText.asText(response.data.author),
+      author:
+        typeof response.data.author === 'string'
+          ? response.data.author
+          : RichText.asText(response.data.author),
       content,
     },
   };
