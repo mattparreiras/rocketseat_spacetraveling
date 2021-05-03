@@ -5,6 +5,7 @@ import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
+import { ReactElement, useMemo } from 'react';
 import Header from '../../components/Header';
 
 import { getPrismicClient } from '../../services/prismic';
@@ -33,8 +34,19 @@ interface PostProps {
   post: Post;
 }
 
-export default function Post(props: PostProps) {
+export default function Post(props: PostProps): ReactElement {
   const { post } = props;
+
+  const timeToRead = useMemo(() => {
+    let wordCount = 0;
+    if (post) {
+      post.data.content.forEach(section => {
+        wordCount += section.heading.split(' ').length;
+        wordCount += section.body.text.split(' ').length;
+      });
+    }
+    return Math.ceil(wordCount / 200);
+  }, [post]);
   return (
     <>
       <Header />
@@ -54,7 +66,7 @@ export default function Post(props: PostProps) {
               <FiUser /> {post.data.author}
             </span>
             <span>
-              <FiClock />
+              <FiClock /> {timeToRead}min
             </span>
           </div>
           {post.data.content.map((section, index) => (
